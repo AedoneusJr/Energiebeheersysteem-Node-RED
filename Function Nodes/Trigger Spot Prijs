@@ -1,0 +1,11 @@
+var actoren = msg.payload.ontbrekende_prioriteiten || [];
+
+// Controleer of het ontvangen array leeg is
+if (actoren.length === 0) {
+    // Als het array leeg is, stuur niets door
+    return null;
+} else {
+    // Als het array niet leeg is, stuur een boolean true door
+    msg.payload = true;
+    return msg;
+}
