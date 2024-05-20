@@ -1,0 +1,354 @@
+var resultaat = Math.abs(msg.payload.waarde);
+var waarde = msg.payload.waarde;
+
+// Controleren of het array al bestaat in de context variabele
+var actoren_aansturen = context.get('actoren_aansturen') || [];
+var overschot = resultaat; // Variabele om overschot bij te houden
+
+var actoren = {
+    "Prio1": {
+        "min": 4.16 * 1000, // Minimum vermogen in watt (4.16 kW * 1000)
+        "max": 22 * 1000    // Maximum vermogen in watt (22 kW * 1000)
+    },
+    "Prio2": {
+        "min": 1 * 1000,
+        "max": 2 * 1000
+    },
+    "Prio3": {
+        "min": 2 * 1000,
+        "max": 10 * 1000
+    },
+    "Prio4": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio5": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio6": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio7": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio8": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio9": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio10": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio11": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio12": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    }
+};
+
+// Als het array al aanwezig is
+if (actoren_aansturen.length > 0) {
+    if (msg.payload && msg.payload.signaal === "Negatief") {
+        node.warn("Waarschuwing: Array aanvullen");
+
+        // Bepaal de laatst toegevoegde prioriteit
+        var lastPriority = actoren_aansturen[actoren_aansturen.length - 1].actor;
+        var lastPriorityIndex = parseInt(lastPriority.substring(4)); // Extract nummer van laatst toegevoegde prioriteit
+
+        // Controleer of er een volgende prioriteit is
+        if (lastPriorityIndex < Object.keys(actoren).length) {
+            var nextPriorityIndex = lastPriorityIndex + 1;
+            var nextPriorityKey = "Prio" + nextPriorityIndex;
+
+            // Controleer of de waarde hoger is dan de minimale waarde van de volgende prioriteit
+            if (resultaat >= actoren[nextPriorityKey]["min"]) {
+                // Voeg de volgende prioriteit toe aan het array
+                actoren_aansturen.push({
+                    "actor": nextPriorityKey,
+                    "min": actoren[nextPriorityKey]["min"],
+                    "max": actoren[nextPriorityKey]["max"],
+                    "overschot": 0
+                });
+                context.set('actoren_aansturen', actoren_aansturen); // Array bijwerken in context variabele
+                msg.payload.actoren_aansturen = actoren_aansturen; // Bijgewerkte array toewijzen aan payload
+                return msg; // Retourneer de volledige msg met bijgewerkt array
+            }
+        }
+    } else if (msg.payload && msg.payload.signaal === "Positief") {
+        node.warn("Waarschuwing: Array aanpassen");
+        actoren_aansturen.pop(); // Verwijder de laatste prioriteit uit het array
+        msg.payload.actoren_aansturen = actoren_aansturen; // Bijgewerkte array toewijzen aan payload
+        return msg; // Retourneer de volledige msg met bijgewerkt array
+    }
+} else {
+    // Het array is leeg, voeg nieuwe waarden toe
+    node.warn("Array aanmaken");
+    // Controleer de inputwaarde voor Prio1
+    if (resultaat >= actoren["Prio1"]["min"] && resultaat <= actoren["Prio1"]["max"]) {
+        actoren_aansturen.push({
+            "actor": "Prio1",
+            "min": actoren["Prio1"]["min"],
+            "max": actoren["Prio1"]["max"],
+            "overschot": 0
+        });
+        overschot = 0; // Reset overschot omdat Prio1 is aangestuurd
+    } else if (resultaat > actoren["Prio1"]["max"]) {
+        actoren_aansturen.push({
+            "actor": "Prio1",
+            "min": actoren["Prio1"]["min"],
+            "max": actoren["Prio1"]["max"],
+            "overschot": resultaat - actoren["Prio1"]["max"]
+        });
+        overschot -= actoren["Prio1"]["max"];
+    }
+
+    // Controleer het overschot voor Prio2
+    if (overschot > 0) {
+        if (overschot >= actoren["Prio2"]["min"] && overschot <= actoren["Prio2"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio2",
+                "min": actoren["Prio2"]["min"],
+                "max": actoren["Prio2"]["max"],
+                "overschot": 0
+            });
+            overschot = 0;
+        } else if (overschot > actoren["Prio2"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio2",
+                "min": actoren["Prio2"]["min"],
+                "max": actoren["Prio2"]["max"],
+                "overschot": overschot - actoren["Prio2"]["max"]
+            });
+            overschot -= actoren["Prio2"]["max"];
+        }
+    }
+
+    // Controleer het overschot voor Prio4
+    if (overschot > 0) {
+        if (overschot >= actoren["Prio3"]["min"] && overschot <= actoren["Prio3"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio3",
+                "min": actoren["Prio3"]["min"],
+                "max": actoren["Prio3"]["max"],
+                "overschot": 0
+            });
+            overschot = 0;
+        } else if (overschot > actoren["Prio3"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio3",
+                "min": actoren["Prio3"]["min"],
+                "max": actoren["Prio3"]["max"],
+                "overschot": overschot - actoren["Prio3"]["max"]
+            });
+            overschot -= actoren["Prio3"]["max"];
+        }
+    }
+
+    // Controleer het overschot voor Prio4
+    if (overschot > 0) {
+        if (overschot >= actoren["Prio4"]["min"] && overschot <= actoren["Prio4"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio4",
+                "min": actoren["Prio4"]["min"],
+                "max": actoren["Prio4"]["max"],
+                "overschot": 0
+            });
+            overschot = 0;
+        } else if (overschot > actoren["Prio4"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio4",
+                "min": actoren["Prio4"]["min"],
+                "max": actoren["Prio4"]["max"],
+                "overschot": overschot - actoren["Prio4"]["max"]
+            });
+            overschot -= actoren["Prio4"]["max"];
+        }
+    }
+
+    // Controleer het overschot voor Prio5
+    if (overschot > 0) {
+        if (overschot >= actoren["Prio5"]["min"] && overschot <= actoren["Prio5"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio5",
+                "min": actoren["Prio5"]["min"],
+                "max": actoren["Prio5"]["max"],
+                "overschot": 0
+            });
+            overschot = 0;
+        } else if (overschot > actoren["Prio5"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio5",
+                "min": actoren["Prio5"]["min"],
+                "max": actoren["Prio5"]["max"],
+                "overschot": overschot - actoren["Prio5"]["max"]
+            });
+            overschot -= actoren["Prio5"]["max"];
+        }
+    }
+
+    // Controleer het overschot voor Prio6
+    if (overschot > 0) {
+        if (overschot >= actoren["Prio6"]["min"] && overschot <= actoren["Prio6"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio6",
+                "min": actoren["Prio6"]["min"],
+                "max": actoren["Prio6"]["max"],
+                "overschot": 0
+            });
+            overschot = 0;
+        } else if (overschot > actoren["Prio6"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio6",
+                "min": actoren["Prio6"]["min"],
+                "max": actoren["Prio6"]["max"],
+                "overschot": overschot - actoren["Prio6"]["max"]
+            });
+            overschot -= actoren["Prio6"]["max"];
+        }
+    }
+
+    // Controleer het overschot voor Prio7
+    if (overschot > 0) {
+        if (overschot >= actoren["Prio7"]["min"] && overschot <= actoren["Prio7"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio7",
+                "min": actoren["Prio7"]["min"],
+                "max": actoren["Prio7"]["max"],
+                "overschot": 0
+            });
+            overschot = 0;
+        } else if (overschot > actoren["Prio7"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio7",
+                "min": actoren["Prio7"]["min"],
+                "max": actoren["Prio7"]["max"],
+                "overschot": overschot - actoren["Prio7"]["max"]
+            });
+            overschot -= actoren["Prio7"]["max"];
+        }
+    }
+
+    // Controleer het overschot voor Prio8
+    if (overschot > 0) {
+        if (overschot >= actoren["Prio8"]["min"] && overschot <= actoren["Prio8"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio8",
+                "min": actoren["Prio8"]["min"],
+                "max": actoren["Prio8"]["max"],
+                "overschot": 0
+            });
+            overschot = 0;
+        } else if (overschot > actoren["Prio8"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio8",
+                "min": actoren["Prio8"]["min"],
+                "max": actoren["Prio8"]["max"],
+                "overschot": overschot - actoren["Prio8"]["max"]
+            });
+            overschot -= actoren["Prio8"]["max"];
+        }
+    }
+
+    // Controleer het overschot voor Prio9
+    if (overschot > 0) {
+        if (overschot >= actoren["Prio9"]["min"] && overschot <= actoren["Prio9"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio9",
+                "min": actoren["Prio9"]["min"],
+                "max": actoren["Prio9"]["max"],
+                "overschot": 0
+            });
+            overschot = 0;
+        } else if (overschot > actoren["Prio9"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio9",
+                "min": actoren["Prio9"]["min"],
+                "max": actoren["Prio9"]["max"],
+                "overschot": overschot - actoren["Prio9"]["max"]
+            });
+            overschot -= actoren["Prio9"]["max"];
+        }
+    }
+
+    // Controleer het overschot voor Prio10
+    if (overschot > 0) {
+        if (overschot >= actoren["Prio10"]["min"] && overschot <= actoren["Prio10"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio10",
+                "min": actoren["Prio10"]["min"],
+                "max": actoren["Prio10"]["max"],
+                "overschot": 0
+            });
+            overschot = 0;
+        } else if (overschot > actoren["Prio10"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio10",
+                "min": actoren["Prio10"]["min"],
+                "max": actoren["Prio10"]["max"],
+                "overschot": overschot - actoren["Prio10"]["max"]
+            });
+            overschot -= actoren["Prio10"]["max"];
+        }
+    }
+
+    // Controleer het overschot voor Prio11
+    if (overschot > 0) {
+        if (overschot >= actoren["Prio11"]["min"] && overschot <= actoren["Prio11"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio11",
+                "min": actoren["Prio11"]["min"],
+                "max": actoren["Prio11"]["max"],
+                "overschot": 0
+            });
+            overschot = 0;
+        } else if (overschot > actoren["Prio11"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio11",
+                "min": actoren["Prio11"]["min"],
+                "max": actoren["Prio11"]["max"],
+                "overschot": overschot - actoren["Prio11"]["max"]
+            });
+            overschot -= actoren["Prio11"]["max"];
+        }
+    }
+
+    // Controleer het overschot voor Prio12
+    if (overschot > 0) {
+        if (overschot >= actoren["Prio12"]["min"] && overschot <= actoren["Prio12"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio12",
+                "min": actoren["Prio12"]["min"],
+                "max": actoren["Prio12"]["max"],
+                "overschot": 0
+            });
+            overschot = 0;
+        } else if (overschot > actoren["Prio12"]["max"]) {
+            actoren_aansturen.push({
+                "actor": "Prio12",
+                "min": actoren["Prio12"]["min"],
+                "max": actoren["Prio12"]["max"],
+                "overschot": overschot - actoren["Prio12"]["max"]
+            });
+            overschot -= actoren["Prio12"]["max"];
+        }
+    }
+
+    context.set('actoren_aansturen', actoren_aansturen);
+
+    msg.payload = {
+        "actoren_aansturen": actoren_aansturen,
+        "waarde": waarde
+    };
+}
+
+return msg;
