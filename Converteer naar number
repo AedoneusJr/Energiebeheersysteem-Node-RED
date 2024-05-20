@@ -1,0 +1,8 @@
+// Converteer de waarde van msg.payload naar een numerieke waarde
+var actPowerTot = parseFloat(msg.payload);
+
+// Wijs de numerieke waarde toe aan msg.payload
+msg.payload = actPowerTot;
+
+// Stuur het bericht door naar de volgende node
+return msg;
