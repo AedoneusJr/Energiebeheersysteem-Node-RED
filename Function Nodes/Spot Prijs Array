@@ -1,0 +1,79 @@
+var actoren = {
+    "Prio1": {
+        "min": 4.16 * 1000, // Minimum vermogen in watt (4.16 kW * 1000)
+        "max": 22 * 1000    // Maximum vermogen in watt (22 kW * 1000)
+    },
+    "Prio2": {
+        "min": 1 * 1000,
+        "max": 2 * 1000
+    },
+    "Prio3": {
+        "min": 2 * 1000,
+        "max": 10 * 1000
+    },
+    "Prio4": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio5": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio6": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio7": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio8": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio9": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio10": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio11": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    },
+    "Prio12": {
+        "min": 100 * 1000,
+        "max": 100 * 1000
+    }
+};
+
+var actoren_aansturen = msg.payload.actoren_aansturen || [];
+var ontbrekendePrioriteiten = [];
+
+// Controleer welke prioriteiten ontbreken in het array
+for (var prioriteit in actoren) {
+    var gevonden = false;
+    for (var i = 0; i < actoren_aansturen.length; i++) {
+        if (actoren_aansturen[i].actor === prioriteit) {
+            gevonden = true;
+            break;
+        }
+    }
+    if (!gevonden) {
+        ontbrekendePrioriteiten.push({
+            "actor": prioriteit,
+            "min": actoren[prioriteit].min,
+            "max": actoren[prioriteit].max,
+            "overschot": 0
+        });
+    }
+}
+
+// Stuur het nieuwe array door
+msg.payload = {
+    "ontbrekende_prioriteiten": ontbrekendePrioriteiten
+};
+
+return msg;
