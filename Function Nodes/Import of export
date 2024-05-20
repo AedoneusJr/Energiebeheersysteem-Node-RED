@@ -1,0 +1,17 @@
+// Controleer of de waarde groter dan of gelijk aan nul is
+if (msg.payload >= 0) {
+    // Als de waarde positief of nul is, stuur "Positief signaal"
+    msg.payload = {
+        signaal: "Positief",
+        waarde: msg.payload
+    };
+} else {
+    // Als de waarde negatief is, stuur "Negatief signaal"
+    msg.payload = {
+        signaal: "Negatief",
+        waarde: msg.payload
+    };
+}
+
+// Geef het bericht door
+return msg;
