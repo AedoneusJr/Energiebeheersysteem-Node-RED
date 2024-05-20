@@ -1,0 +1,24 @@
+// Controleer of de actor "Prio1" aanwezig is in de payload
+const prios = msg.payload[0].payload.ontbrekende_prioriteiten;
+const prio1 = prios.find(prio => prio.actor === "Prio1");
+
+if (prio1) {
+    // Als Prio1 aanwezig is, controleer dan de waarde van de payload
+    const value = msg.payload[1].payload;
+
+    if (value === 'true') {
+        // Als waarde 'true' is, stuur true
+        msg.payload = true;
+    } else if (value === 'false') {
+        // Als waarde 'false' is, stuur false
+        msg.payload = false;
+    } else {
+        // Als waarde iets anders is, stuur niets door
+        return null;
+    }
+
+    return msg;
+} else {
+    // Als Prio1 niet aanwezig is, stuur niets door
+    return null;
+}
