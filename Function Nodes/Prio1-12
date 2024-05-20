@@ -1,0 +1,13 @@
+// Controleer of msg.payload een object is en actoren_aansturen bevat
+if (typeof msg.payload === 'object' && Array.isArray(msg.payload.actoren_aansturen)) {
+    const containsPrio1 = msg.payload.actoren_aansturen.some(item => item.actor === "Prio1");
+
+    return {
+        payload: containsPrio1 // Stuur true als "Prio1" voorkomt, anders false
+    };
+} else if (typeof msg.payload === 'boolean') {
+    // Als msg.payload een boolean is, stuur het bericht gewoon door
+    return msg;
+} else {
+    return null; // Geen geldige invoer
+}
