@@ -1,0 +1,2930 @@
+[
+    {
+        "id": "56eb50547909eb63",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "8fbdc3fe137e3b26",
+        "type": "pm3000",
+        "z": "56eb50547909eb63",
+        "name": "Active power",
+        "unitId": "1",
+        "data": "actPowerTot",
+        "x": 150,
+        "y": 120,
+        "wires": [
+            [
+                "e388ccf63fe0d570"
+            ]
+        ]
+    },
+    {
+        "id": "89be5a6b27664d50",
+        "type": "converter",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "unitId": "",
+        "data": "",
+        "x": 160,
+        "y": 200,
+        "wires": [
+            [
+                "58be38c1bfb89c09"
+            ]
+        ]
+    },
+    {
+        "id": "25bbf3bf0ab09c9c",
+        "type": "inject",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 80,
+        "wires": [
+            [
+                "8fbdc3fe137e3b26"
+            ]
+        ]
+    },
+    {
+        "id": "b1ab935afd6a82ca",
+        "type": "comment",
+        "z": "56eb50547909eb63",
+        "name": "Import/export (ALSB)",
+        "info": "",
+        "x": 160,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "60b7b8f53adb2731",
+        "type": "comment",
+        "z": "56eb50547909eb63",
+        "name": "Spot prijs methode",
+        "info": "",
+        "x": 170,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "07d0c2af90e503d8",
+        "type": "nordpool-api-plus",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "area": "BE",
+        "currency": "EUR",
+        "x": 420,
+        "y": 800,
+        "wires": [
+            [
+                "d9499e1df92d723b"
+            ]
+        ]
+    },
+    {
+        "id": "d9499e1df92d723b",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Nordpool Prices",
+        "func": "const nordpool = msg.payload;\n\nfunction toIsoString(date) {\n  var tzo = -date.getTimezoneOffset(), dif = tzo >= 0 ? \"+\" : \"-\",\n    pad = function (num) {\n      return (num < 10 ? \"0\" : \"\") + num;\n    };\n\n  return (\n    date.getFullYear() + \"-\" +\n    pad(date.getMonth() + 1) + \"-\" +\n    pad(date.getDate()) + \"T\" +\n    pad(date.getHours()) + \":\" +\n    pad(date.getMinutes()) + \":\" +\n    pad(date.getSeconds()) + dif +\n    pad(Math.floor(Math.abs(tzo) / 60)) + \":\" +\n    pad(Math.abs(tzo) % 60)\n  );\n}\n\nconst payload = {\n  priceData: nordpool.map((h) => {\n    const date = new Date(h.timestamp);\n    const start = toIsoString(date);\n    const value = Math.round(h.price * 10) / 10000;\n\n    return {\n      start,\n      value,\n    };\n  }),\n};\n\nreturn { payload };",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 860,
+        "wires": [
+            [
+                "aa3b3989bb24d275",
+                "b61a7a0abe6587b7"
+            ]
+        ]
+    },
+    {
+        "id": "aa3b3989bb24d275",
+        "type": "ps-strategy-lowest-price",
+        "z": "56eb50547909eb63",
+        "name": "Lowest Price",
+        "fromTime": "00",
+        "toTime": "23",
+        "hoursOn": "24",
+        "maxPrice": "",
+        "doNotSplit": true,
+        "sendCurrentValueWhenRescheduling": false,
+        "outputValueForOn": "true",
+        "outputValueForOff": "false",
+        "outputValueForOntype": "bool",
+        "outputValueForOfftype": "bool",
+        "outputIfNoSchedule": "false",
+        "outputOutsidePeriod": "false",
+        "contextStorage": "memory",
+        "x": 610,
+        "y": 860,
+        "wires": [
+            [
+                "5e7b1e1d2b70b0cf"
+            ],
+            [
+                "1aa9db5d245008a0"
+            ],
+            [
+                "2d1480206eb5b174"
+            ]
+        ]
+    },
+    {
+        "id": "b61a7a0abe6587b7",
+        "type": "debug",
+        "z": "56eb50547909eb63",
+        "name": "Array Prices",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 410,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "e388ccf63fe0d570",
+        "type": "modbus-flex-getter",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "showStatusActivities": false,
+        "showErrors": false,
+        "logIOActivities": false,
+        "server": "8e902401ad449d30",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": true,
+        "x": 170,
+        "y": 160,
+        "wires": [
+            [],
+            [
+                "89be5a6b27664d50"
+            ]
+        ]
+    },
+    {
+        "id": "58be38c1bfb89c09",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "converteer naar number",
+        "func": "// Converteer de waarde van msg.payload naar een numerieke waarde\nvar actPowerTot = parseFloat(msg.payload);\n\n// Wijs de numerieke waarde toe aan msg.payload\nmsg.payload = actPowerTot;\n\n// Stuur het bericht door naar de volgende node\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 200,
+        "wires": [
+            [
+                "f1ed92f39a3fc82e"
+            ]
+        ]
+    },
+    {
+        "id": "f1ed92f39a3fc82e",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Import of export",
+        "func": "// Controleer of de waarde groter dan of gelijk aan nul is\nif (msg.payload >= 0) {\n    // Als de waarde positief of nul is, stuur \"Positief signaal\"\n    msg.payload = {\n        signaal: \"Positief\",\n        waarde: msg.payload\n    };\n} else {\n    // Als de waarde negatief is, stuur \"Negatief signaal\"\n    msg.payload = {\n        signaal: \"Negatief\",\n        waarde: msg.payload\n    };\n}\n\n// Geef het bericht door\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 240,
+        "wires": [
+            [
+                "a0bf137744861304",
+                "356d3db797bd8832"
+            ]
+        ]
+    },
+    {
+        "id": "a0bf137744861304",
+        "type": "debug",
+        "z": "56eb50547909eb63",
+        "name": "ALSB waarde",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 700,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "946d733b83e96b2b",
+        "type": "comment",
+        "z": "56eb50547909eb63",
+        "name": "Automatische sturing",
+        "info": "",
+        "x": 440,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "5f50830d17f0d194",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio1",
+        "name": "Prio1 (X0.1)",
+        "x": 1360,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "5144f9c8086c8298",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio2",
+        "name": "Prio2 (X0.2)",
+        "x": 1360,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "56ca94454c34fc3f",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio1",
+        "func": "// Controleer of msg.payload een object is en actoren_aansturen bevat\nif (typeof msg.payload === 'object' && Array.isArray(msg.payload.actoren_aansturen)) {\n    const containsPrio1 = msg.payload.actoren_aansturen.some(item => item.actor === \"Prio1\");\n\n    return {\n        payload: containsPrio1 // Stuur true als \"Prio1\" voorkomt, anders false\n    };\n} else if (typeof msg.payload === 'boolean') {\n    // Als msg.payload een boolean is, stuur het bericht gewoon door\n    return msg;\n} else {\n    return null; // Geen geldige invoer\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 40,
+        "wires": [
+            [
+                "6e0b57dc0efd683c"
+            ]
+        ]
+    },
+    {
+        "id": "7ce157a71f6662ab",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio2",
+        "func": "if (typeof msg.payload === 'object' && Array.isArray(msg.payload.actoren_aansturen)) {\n    const containsPrio2 = msg.payload.actoren_aansturen.some(item => item.actor === \"Prio2\");\n\n    return {\n        payload: containsPrio2\n    };\n} else if (typeof msg.payload === 'boolean' && msg.payload === false) {\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 100,
+        "wires": [
+            [
+                "50ae36b344134e66"
+            ]
+        ]
+    },
+    {
+        "id": "41d20d241539bd2d",
+        "type": "link out",
+        "z": "56eb50547909eb63",
+        "name": "Aansturing",
+        "mode": "link",
+        "links": [
+            "ea0b0951759d4563",
+            "aa5564c782313669",
+            "c6111c7448615156",
+            "665067a52706e10b",
+            "cadd85fbd81aa925",
+            "894ce01831d83f4e",
+            "aef9391b259cfc3f",
+            "ec6d5fe9decb1d13",
+            "ce4a24d16baef549",
+            "ad365c337da0f743",
+            "4b107038a9579885",
+            "1f81be314f40e758",
+            "6d368c203d4b9148"
+        ],
+        "x": 665,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "cadd85fbd81aa925",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "Prio2",
+        "links": [
+            "41d20d241539bd2d"
+        ],
+        "x": 915,
+        "y": 100,
+        "wires": [
+            [
+                "7ce157a71f6662ab"
+            ]
+        ]
+    },
+    {
+        "id": "2d1480206eb5b174",
+        "type": "debug",
+        "z": "56eb50547909eb63",
+        "name": "Schedule LP",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 830,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "866365ebc5092668",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio3",
+        "name": "Prio3 (X0.3)",
+        "x": 1360,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "d750638681189ba3",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio3",
+        "func": "if (typeof msg.payload === 'object' && Array.isArray(msg.payload.actoren_aansturen)) {\n    const containsPrio3 = msg.payload.actoren_aansturen.some(item => item.actor === \"Prio3\");\n\n    return {\n        payload: containsPrio3\n    };\n} else if (typeof msg.payload === 'boolean' && msg.payload === false) {\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 160,
+        "wires": [
+            [
+                "807a3c92e7f41a62"
+            ]
+        ]
+    },
+    {
+        "id": "aa5564c782313669",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "Prio3",
+        "links": [
+            "41d20d241539bd2d"
+        ],
+        "x": 915,
+        "y": 160,
+        "wires": [
+            [
+                "d750638681189ba3"
+            ]
+        ]
+    },
+    {
+        "id": "25b8096dc0e00e9d",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio4",
+        "func": "if (typeof msg.payload === 'object' && Array.isArray(msg.payload.actoren_aansturen)) {\n    const containsPrio4 = msg.payload.actoren_aansturen.some(item => item.actor === \"Prio4\");\n\n    return {\n        payload: containsPrio4\n    };\n} else if (typeof msg.payload === 'boolean' && msg.payload === false) {\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 220,
+        "wires": [
+            [
+                "6a56cf83809792aa"
+            ]
+        ]
+    },
+    {
+        "id": "ca7f8136bfceea75",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio5",
+        "func": "if (typeof msg.payload === 'object' && Array.isArray(msg.payload.actoren_aansturen)) {\n    const containsPrio5 = msg.payload.actoren_aansturen.some(item => item.actor === \"Prio5\");\n\n    return {\n        payload: containsPrio5\n    };\n} else if (typeof msg.payload === 'boolean' && msg.payload === false) {\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 280,
+        "wires": [
+            [
+                "4ea5d48cbce077c1"
+            ]
+        ]
+    },
+    {
+        "id": "bcdebfe067e9f1b1",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio6",
+        "func": "if (typeof msg.payload === 'object' && Array.isArray(msg.payload.actoren_aansturen)) {\n    const containsPrio6 = msg.payload.actoren_aansturen.some(item => item.actor === \"Prio6\");\n\n    return {\n        payload: containsPrio6\n    };\n} else if (typeof msg.payload === 'boolean' && msg.payload === false) {\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 340,
+        "wires": [
+            [
+                "362e5bcbd2c4238b"
+            ]
+        ]
+    },
+    {
+        "id": "0a1d631ccbfbfcef",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio7",
+        "func": "if (typeof msg.payload === 'object' && Array.isArray(msg.payload.actoren_aansturen)) {\n    const containsPrio7 = msg.payload.actoren_aansturen.some(item => item.actor === \"Prio7\");\n\n    return {\n        payload: containsPrio7\n    };\n} else if (typeof msg.payload === 'boolean' && msg.payload === false) {\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 400,
+        "wires": [
+            [
+                "4199883c17f32594"
+            ]
+        ]
+    },
+    {
+        "id": "89ab0abc9aa49da0",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio8",
+        "func": "if (typeof msg.payload === 'object' && Array.isArray(msg.payload.actoren_aansturen)) {\n    const containsPrio8 = msg.payload.actoren_aansturen.some(item => item.actor === \"Prio8\");\n\n    return {\n        payload: containsPrio8\n    };\n} else if (typeof msg.payload === 'boolean' && msg.payload === false) {\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 460,
+        "wires": [
+            [
+                "048fad91bcde9076"
+            ]
+        ]
+    },
+    {
+        "id": "e1a835948dde6882",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio9",
+        "func": "if (typeof msg.payload === 'object' && Array.isArray(msg.payload.actoren_aansturen)) {\n    const containsPrio9 = msg.payload.actoren_aansturen.some(item => item.actor === \"Prio9\");\n\n    return {\n        payload: containsPrio9\n    };\n} else if (typeof msg.payload === 'boolean' && msg.payload === false) {\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 520,
+        "wires": [
+            [
+                "c4cc4e0a708ac453"
+            ]
+        ]
+    },
+    {
+        "id": "7bcaaa83c2d9988d",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio10",
+        "func": "if (typeof msg.payload === 'object' && Array.isArray(msg.payload.actoren_aansturen)) {\n    const containsPrio10 = msg.payload.actoren_aansturen.some(item => item.actor === \"Prio10\");\n\n    return {\n        payload: containsPrio10\n    };\n} else if (typeof msg.payload === 'boolean' && msg.payload === false) {\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 580,
+        "wires": [
+            [
+                "0c58999e8b76fc64"
+            ]
+        ]
+    },
+    {
+        "id": "860575171f3e8fc9",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio11",
+        "func": "if (typeof msg.payload === 'object' && Array.isArray(msg.payload.actoren_aansturen)) {\n    const containsPrio11 = msg.payload.actoren_aansturen.some(item => item.actor === \"Prio11\");\n\n    return {\n        payload: containsPrio11\n    };\n} else if (typeof msg.payload === 'boolean' && msg.payload === false) {\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 640,
+        "wires": [
+            [
+                "0d39f53aaa66ca61"
+            ]
+        ]
+    },
+    {
+        "id": "0235bc3d1f72baf8",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio12",
+        "func": "if (typeof msg.payload === 'object' && Array.isArray(msg.payload.actoren_aansturen)) {\n    const containsPrio12 = msg.payload.actoren_aansturen.some(item => item.actor === \"Prio12\");\n\n    return {\n        payload: containsPrio12\n    };\n} else if (typeof msg.payload === 'boolean' && msg.payload === false) {\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 700,
+        "wires": [
+            [
+                "e3d1b26e0269ba98"
+            ]
+        ]
+    },
+    {
+        "id": "ec6d5fe9decb1d13",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "Prio1",
+        "links": [
+            "41d20d241539bd2d"
+        ],
+        "x": 915,
+        "y": 40,
+        "wires": [
+            [
+                "56ca94454c34fc3f"
+            ]
+        ]
+    },
+    {
+        "id": "28fed13e07adbbb0",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio4",
+        "name": "Prio4 (X0.4)",
+        "x": 1360,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "17087649954c517c",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio5",
+        "name": "Prio5 (X0.5)",
+        "x": 1360,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "a32b6789bcfaaa76",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio6",
+        "name": "Prio6 (X0.6)",
+        "x": 1360,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "440a904bea33738f",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio7",
+        "name": "Prio7 (X0.7)",
+        "x": 1360,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "40c679ce8472b399",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio8",
+        "name": "Prio8 (X1.0)",
+        "x": 1360,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "1179ec34ececf02f",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio9",
+        "name": "Prio9 (X1.1)",
+        "x": 1360,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "9c085c6823eab062",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio10",
+        "name": "Prio10 (X1.2)",
+        "x": 1360,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "93743d05ea304f09",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio11",
+        "name": "Prio11 (X1.3)",
+        "x": 1360,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "5c0a128ac39ae713",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio12",
+        "name": "Prio12 (X1.4)",
+        "x": 1360,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "665067a52706e10b",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "Prio5",
+        "links": [
+            "41d20d241539bd2d"
+        ],
+        "x": 915,
+        "y": 280,
+        "wires": [
+            [
+                "ca7f8136bfceea75"
+            ]
+        ]
+    },
+    {
+        "id": "aef9391b259cfc3f",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "Prio6",
+        "links": [
+            "41d20d241539bd2d"
+        ],
+        "x": 915,
+        "y": 340,
+        "wires": [
+            [
+                "bcdebfe067e9f1b1"
+            ]
+        ]
+    },
+    {
+        "id": "ad365c337da0f743",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "Prio4",
+        "links": [
+            "41d20d241539bd2d"
+        ],
+        "x": 915,
+        "y": 220,
+        "wires": [
+            [
+                "25b8096dc0e00e9d"
+            ]
+        ]
+    },
+    {
+        "id": "1f81be314f40e758",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "Prio8",
+        "links": [
+            "41d20d241539bd2d"
+        ],
+        "x": 915,
+        "y": 460,
+        "wires": [
+            [
+                "89ab0abc9aa49da0"
+            ]
+        ]
+    },
+    {
+        "id": "4b107038a9579885",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "Prio9",
+        "links": [
+            "41d20d241539bd2d"
+        ],
+        "x": 915,
+        "y": 520,
+        "wires": [
+            [
+                "e1a835948dde6882"
+            ]
+        ]
+    },
+    {
+        "id": "ce4a24d16baef549",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "Prio7",
+        "links": [
+            "41d20d241539bd2d"
+        ],
+        "x": 915,
+        "y": 400,
+        "wires": [
+            [
+                "0a1d631ccbfbfcef"
+            ]
+        ]
+    },
+    {
+        "id": "894ce01831d83f4e",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "Prio11",
+        "links": [
+            "41d20d241539bd2d"
+        ],
+        "x": 915,
+        "y": 640,
+        "wires": [
+            [
+                "860575171f3e8fc9"
+            ]
+        ]
+    },
+    {
+        "id": "c6111c7448615156",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "Prio12",
+        "links": [
+            "41d20d241539bd2d"
+        ],
+        "x": 915,
+        "y": 700,
+        "wires": [
+            [
+                "0235bc3d1f72baf8"
+            ]
+        ]
+    },
+    {
+        "id": "ea0b0951759d4563",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "Prio10",
+        "links": [
+            "41d20d241539bd2d"
+        ],
+        "x": 915,
+        "y": 580,
+        "wires": [
+            [
+                "7bcaaa83c2d9988d"
+            ]
+        ]
+    },
+    {
+        "id": "6e0b57dc0efd683c",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1170,
+        "y": 40,
+        "wires": [
+            [
+                "5f50830d17f0d194"
+            ]
+        ]
+    },
+    {
+        "id": "50ae36b344134e66",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1170,
+        "y": 100,
+        "wires": [
+            [
+                "5144f9c8086c8298"
+            ]
+        ]
+    },
+    {
+        "id": "807a3c92e7f41a62",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1170,
+        "y": 160,
+        "wires": [
+            [
+                "866365ebc5092668"
+            ]
+        ]
+    },
+    {
+        "id": "4ea5d48cbce077c1",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1170,
+        "y": 280,
+        "wires": [
+            [
+                "17087649954c517c"
+            ]
+        ]
+    },
+    {
+        "id": "362e5bcbd2c4238b",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1170,
+        "y": 340,
+        "wires": [
+            [
+                "a32b6789bcfaaa76"
+            ]
+        ]
+    },
+    {
+        "id": "4199883c17f32594",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1170,
+        "y": 400,
+        "wires": [
+            [
+                "440a904bea33738f"
+            ]
+        ]
+    },
+    {
+        "id": "048fad91bcde9076",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1170,
+        "y": 460,
+        "wires": [
+            [
+                "40c679ce8472b399"
+            ]
+        ]
+    },
+    {
+        "id": "c4cc4e0a708ac453",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1170,
+        "y": 520,
+        "wires": [
+            [
+                "1179ec34ececf02f"
+            ]
+        ]
+    },
+    {
+        "id": "0c58999e8b76fc64",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1170,
+        "y": 580,
+        "wires": [
+            [
+                "9c085c6823eab062"
+            ]
+        ]
+    },
+    {
+        "id": "0d39f53aaa66ca61",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1170,
+        "y": 640,
+        "wires": [
+            [
+                "93743d05ea304f09"
+            ]
+        ]
+    },
+    {
+        "id": "e3d1b26e0269ba98",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1170,
+        "y": 700,
+        "wires": [
+            [
+                "5c0a128ac39ae713"
+            ]
+        ]
+    },
+    {
+        "id": "444b45335f4cfa5a",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "5",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "hr",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 410,
+        "y": 760,
+        "wires": [
+            [
+                "07d0c2af90e503d8"
+            ]
+        ]
+    },
+    {
+        "id": "6a56cf83809792aa",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1170,
+        "y": 220,
+        "wires": [
+            [
+                "28fed13e07adbbb0"
+            ]
+        ]
+    },
+    {
+        "id": "9b2213ade87a8312",
+        "type": "inject",
+        "z": "56eb50547909eb63",
+        "name": "False",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "false",
+        "payloadType": "bool",
+        "x": 510,
+        "y": 360,
+        "wires": [
+            [
+                "41d20d241539bd2d"
+            ]
+        ]
+    },
+    {
+        "id": "356d3db797bd8832",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Aansturing Network Inputs",
+        "func": "var resultaat = Math.abs(msg.payload.waarde);\nvar waarde = msg.payload.waarde;\n\n// Controleren of het array al bestaat in de context variabele\nvar actoren_aansturen = context.get('actoren_aansturen') || [];\nvar overschot = resultaat; // Variabele om overschot bij te houden\n\nvar actoren = {\n    \"Prio1\": {\n        \"min\": 4.16 * 1000, // Minimum vermogen in watt (4.16 kW * 1000)\n        \"max\": 22 * 1000    // Maximum vermogen in watt (22 kW * 1000)\n    },\n    \"Prio2\": {\n        \"min\": 1 * 1000,\n        \"max\": 2 * 1000\n    },\n    \"Prio3\": {\n        \"min\": 2 * 1000,\n        \"max\": 10 * 1000\n    },\n    \"Prio4\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio5\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio6\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio7\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio8\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio9\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio10\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio11\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio12\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    }\n};\n\n// Als het array al aanwezig is\nif (actoren_aansturen.length > 0) {\n    if (msg.payload && msg.payload.signaal === \"Negatief\") {\n        node.warn(\"Waarschuwing: Array aanvullen\");\n\n        // Bepaal de laatst toegevoegde prioriteit\n        var lastPriority = actoren_aansturen[actoren_aansturen.length - 1].actor;\n        var lastPriorityIndex = parseInt(lastPriority.substring(4)); // Extract nummer van laatst toegevoegde prioriteit\n\n        // Controleer of er een volgende prioriteit is\n        if (lastPriorityIndex < Object.keys(actoren).length) {\n            var nextPriorityIndex = lastPriorityIndex + 1;\n            var nextPriorityKey = \"Prio\" + nextPriorityIndex;\n\n            // Controleer of de waarde hoger is dan de minimale waarde van de volgende prioriteit\n            if (resultaat >= actoren[nextPriorityKey][\"min\"]) {\n                // Voeg de volgende prioriteit toe aan het array\n                actoren_aansturen.push({\n                    \"actor\": nextPriorityKey,\n                    \"min\": actoren[nextPriorityKey][\"min\"],\n                    \"max\": actoren[nextPriorityKey][\"max\"],\n                    \"overschot\": 0\n                });\n                context.set('actoren_aansturen', actoren_aansturen); // Array bijwerken in context variabele\n                msg.payload.actoren_aansturen = actoren_aansturen; // Bijgewerkte array toewijzen aan payload\n                return msg; // Retourneer de volledige msg met bijgewerkt array\n            }\n        }\n    } else if (msg.payload && msg.payload.signaal === \"Positief\") {\n        node.warn(\"Waarschuwing: Array aanpassen\");\n        actoren_aansturen.pop(); // Verwijder de laatste prioriteit uit het array\n        msg.payload.actoren_aansturen = actoren_aansturen; // Bijgewerkte array toewijzen aan payload\n        return msg; // Retourneer de volledige msg met bijgewerkt array\n    }\n} else {\n    // Het array is leeg, voeg nieuwe waarden toe\n    node.warn(\"Array aanmaken\");\n    // Controleer de inputwaarde voor Prio1\n    if (resultaat >= actoren[\"Prio1\"][\"min\"] && resultaat <= actoren[\"Prio1\"][\"max\"]) {\n        actoren_aansturen.push({\n            \"actor\": \"Prio1\",\n            \"min\": actoren[\"Prio1\"][\"min\"],\n            \"max\": actoren[\"Prio1\"][\"max\"],\n            \"overschot\": 0\n        });\n        overschot = 0; // Reset overschot omdat Prio1 is aangestuurd\n    } else if (resultaat > actoren[\"Prio1\"][\"max\"]) {\n        actoren_aansturen.push({\n            \"actor\": \"Prio1\",\n            \"min\": actoren[\"Prio1\"][\"min\"],\n            \"max\": actoren[\"Prio1\"][\"max\"],\n            \"overschot\": resultaat - actoren[\"Prio1\"][\"max\"]\n        });\n        overschot -= actoren[\"Prio1\"][\"max\"];\n    }\n\n    // Controleer het overschot voor Prio2\n    if (overschot > 0) {\n        if (overschot >= actoren[\"Prio2\"][\"min\"] && overschot <= actoren[\"Prio2\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio2\",\n                \"min\": actoren[\"Prio2\"][\"min\"],\n                \"max\": actoren[\"Prio2\"][\"max\"],\n                \"overschot\": 0\n            });\n            overschot = 0;\n        } else if (overschot > actoren[\"Prio2\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio2\",\n                \"min\": actoren[\"Prio2\"][\"min\"],\n                \"max\": actoren[\"Prio2\"][\"max\"],\n                \"overschot\": overschot - actoren[\"Prio2\"][\"max\"]\n            });\n            overschot -= actoren[\"Prio2\"][\"max\"];\n        }\n    }\n\n    // Controleer het overschot voor Prio4\n    if (overschot > 0) {\n        if (overschot >= actoren[\"Prio3\"][\"min\"] && overschot <= actoren[\"Prio3\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio3\",\n                \"min\": actoren[\"Prio3\"][\"min\"],\n                \"max\": actoren[\"Prio3\"][\"max\"],\n                \"overschot\": 0\n            });\n            overschot = 0;\n        } else if (overschot > actoren[\"Prio3\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio3\",\n                \"min\": actoren[\"Prio3\"][\"min\"],\n                \"max\": actoren[\"Prio3\"][\"max\"],\n                \"overschot\": overschot - actoren[\"Prio3\"][\"max\"]\n            });\n            overschot -= actoren[\"Prio3\"][\"max\"];\n        }\n    }\n\n    // Controleer het overschot voor Prio4\n    if (overschot > 0) {\n        if (overschot >= actoren[\"Prio4\"][\"min\"] && overschot <= actoren[\"Prio4\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio4\",\n                \"min\": actoren[\"Prio4\"][\"min\"],\n                \"max\": actoren[\"Prio4\"][\"max\"],\n                \"overschot\": 0\n            });\n            overschot = 0;\n        } else if (overschot > actoren[\"Prio4\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio4\",\n                \"min\": actoren[\"Prio4\"][\"min\"],\n                \"max\": actoren[\"Prio4\"][\"max\"],\n                \"overschot\": overschot - actoren[\"Prio4\"][\"max\"]\n            });\n            overschot -= actoren[\"Prio4\"][\"max\"];\n        }\n    }\n\n    // Controleer het overschot voor Prio5\n    if (overschot > 0) {\n        if (overschot >= actoren[\"Prio5\"][\"min\"] && overschot <= actoren[\"Prio5\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio5\",\n                \"min\": actoren[\"Prio5\"][\"min\"],\n                \"max\": actoren[\"Prio5\"][\"max\"],\n                \"overschot\": 0\n            });\n            overschot = 0;\n        } else if (overschot > actoren[\"Prio5\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio5\",\n                \"min\": actoren[\"Prio5\"][\"min\"],\n                \"max\": actoren[\"Prio5\"][\"max\"],\n                \"overschot\": overschot - actoren[\"Prio5\"][\"max\"]\n            });\n            overschot -= actoren[\"Prio5\"][\"max\"];\n        }\n    }\n\n    // Controleer het overschot voor Prio6\n    if (overschot > 0) {\n        if (overschot >= actoren[\"Prio6\"][\"min\"] && overschot <= actoren[\"Prio6\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio6\",\n                \"min\": actoren[\"Prio6\"][\"min\"],\n                \"max\": actoren[\"Prio6\"][\"max\"],\n                \"overschot\": 0\n            });\n            overschot = 0;\n        } else if (overschot > actoren[\"Prio6\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio6\",\n                \"min\": actoren[\"Prio6\"][\"min\"],\n                \"max\": actoren[\"Prio6\"][\"max\"],\n                \"overschot\": overschot - actoren[\"Prio6\"][\"max\"]\n            });\n            overschot -= actoren[\"Prio6\"][\"max\"];\n        }\n    }\n\n    // Controleer het overschot voor Prio7\n    if (overschot > 0) {\n        if (overschot >= actoren[\"Prio7\"][\"min\"] && overschot <= actoren[\"Prio7\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio7\",\n                \"min\": actoren[\"Prio7\"][\"min\"],\n                \"max\": actoren[\"Prio7\"][\"max\"],\n                \"overschot\": 0\n            });\n            overschot = 0;\n        } else if (overschot > actoren[\"Prio7\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio7\",\n                \"min\": actoren[\"Prio7\"][\"min\"],\n                \"max\": actoren[\"Prio7\"][\"max\"],\n                \"overschot\": overschot - actoren[\"Prio7\"][\"max\"]\n            });\n            overschot -= actoren[\"Prio7\"][\"max\"];\n        }\n    }\n\n    // Controleer het overschot voor Prio8\n    if (overschot > 0) {\n        if (overschot >= actoren[\"Prio8\"][\"min\"] && overschot <= actoren[\"Prio8\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio8\",\n                \"min\": actoren[\"Prio8\"][\"min\"],\n                \"max\": actoren[\"Prio8\"][\"max\"],\n                \"overschot\": 0\n            });\n            overschot = 0;\n        } else if (overschot > actoren[\"Prio8\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio8\",\n                \"min\": actoren[\"Prio8\"][\"min\"],\n                \"max\": actoren[\"Prio8\"][\"max\"],\n                \"overschot\": overschot - actoren[\"Prio8\"][\"max\"]\n            });\n            overschot -= actoren[\"Prio8\"][\"max\"];\n        }\n    }\n\n    // Controleer het overschot voor Prio9\n    if (overschot > 0) {\n        if (overschot >= actoren[\"Prio9\"][\"min\"] && overschot <= actoren[\"Prio9\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio9\",\n                \"min\": actoren[\"Prio9\"][\"min\"],\n                \"max\": actoren[\"Prio9\"][\"max\"],\n                \"overschot\": 0\n            });\n            overschot = 0;\n        } else if (overschot > actoren[\"Prio9\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio9\",\n                \"min\": actoren[\"Prio9\"][\"min\"],\n                \"max\": actoren[\"Prio9\"][\"max\"],\n                \"overschot\": overschot - actoren[\"Prio9\"][\"max\"]\n            });\n            overschot -= actoren[\"Prio9\"][\"max\"];\n        }\n    }\n\n    // Controleer het overschot voor Prio10\n    if (overschot > 0) {\n        if (overschot >= actoren[\"Prio10\"][\"min\"] && overschot <= actoren[\"Prio10\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio10\",\n                \"min\": actoren[\"Prio10\"][\"min\"],\n                \"max\": actoren[\"Prio10\"][\"max\"],\n                \"overschot\": 0\n            });\n            overschot = 0;\n        } else if (overschot > actoren[\"Prio10\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio10\",\n                \"min\": actoren[\"Prio10\"][\"min\"],\n                \"max\": actoren[\"Prio10\"][\"max\"],\n                \"overschot\": overschot - actoren[\"Prio10\"][\"max\"]\n            });\n            overschot -= actoren[\"Prio10\"][\"max\"];\n        }\n    }\n\n    // Controleer het overschot voor Prio11\n    if (overschot > 0) {\n        if (overschot >= actoren[\"Prio11\"][\"min\"] && overschot <= actoren[\"Prio11\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio11\",\n                \"min\": actoren[\"Prio11\"][\"min\"],\n                \"max\": actoren[\"Prio11\"][\"max\"],\n                \"overschot\": 0\n            });\n            overschot = 0;\n        } else if (overschot > actoren[\"Prio11\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio11\",\n                \"min\": actoren[\"Prio11\"][\"min\"],\n                \"max\": actoren[\"Prio11\"][\"max\"],\n                \"overschot\": overschot - actoren[\"Prio11\"][\"max\"]\n            });\n            overschot -= actoren[\"Prio11\"][\"max\"];\n        }\n    }\n\n    // Controleer het overschot voor Prio12\n    if (overschot > 0) {\n        if (overschot >= actoren[\"Prio12\"][\"min\"] && overschot <= actoren[\"Prio12\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio12\",\n                \"min\": actoren[\"Prio12\"][\"min\"],\n                \"max\": actoren[\"Prio12\"][\"max\"],\n                \"overschot\": 0\n            });\n            overschot = 0;\n        } else if (overschot > actoren[\"Prio12\"][\"max\"]) {\n            actoren_aansturen.push({\n                \"actor\": \"Prio12\",\n                \"min\": actoren[\"Prio12\"][\"min\"],\n                \"max\": actoren[\"Prio12\"][\"max\"],\n                \"overschot\": overschot - actoren[\"Prio12\"][\"max\"]\n            });\n            overschot -= actoren[\"Prio12\"][\"max\"];\n        }\n    }\n\n    context.set('actoren_aansturen', actoren_aansturen);\n\n    msg.payload = {\n        \"actoren_aansturen\": actoren_aansturen,\n        \"waarde\": waarde\n    };\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 280,
+        "wires": [
+            [
+                "d86310b01a674a97",
+                "41d20d241539bd2d"
+            ]
+        ]
+    },
+    {
+        "id": "d86310b01a674a97",
+        "type": "debug",
+        "z": "56eb50547909eb63",
+        "name": "Array sturing",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 710,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "8b18dd3010e22c0f",
+        "type": "inject",
+        "z": "56eb50547909eb63",
+        "name": "False override",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "false",
+        "payloadType": "bool",
+        "x": 470,
+        "y": 320,
+        "wires": [
+            [
+                "349cfa06b60e7749"
+            ]
+        ]
+    },
+    {
+        "id": "349cfa06b60e7749",
+        "type": "link out",
+        "z": "56eb50547909eb63",
+        "name": "False override",
+        "mode": "link",
+        "links": [
+            "0ec954e0b45ed8fc",
+            "12ba8b141d56c106",
+            "0ec970e01c7fba38",
+            "a2013375873cd6dc",
+            "72fb039a4b627f29",
+            "afda07aa6714d07f",
+            "5c2875d420b5d8ff",
+            "0f2146d3bfb97ae3",
+            "abf4a3ca866684d3",
+            "a10b6fbe981c7d29",
+            "ec79b0bf9a7ef673",
+            "0fc656a74a969724",
+            "550e299a12eaa29a",
+            "974405fe05dd05bd",
+            "9f87d335a92f834e",
+            "fd841dd98edf9d3e",
+            "7c136d081f6c82f8",
+            "3a322dc00fbc980d",
+            "57abb6bc74d4106c",
+            "59d8a6c0a97a3de3",
+            "e27c7eb5a6bc70df",
+            "e7cb88947ebca49a",
+            "66cdac0a82cf6a52",
+            "d602f0a6797b5ca4",
+            "5d93b086aa08636a",
+            "16696a24d9e39af9",
+            "61be3ea5b5122a00",
+            "f0886795b4d8391d",
+            "f52b281d99c6c101",
+            "c2b44edf59438df3",
+            "436b696d397a61f7",
+            "148026b09ede53c8",
+            "61ab30678f953fb2",
+            "d23582877ea7a83e",
+            "cb07a6a5db2a7779",
+            "a976d82b3cba6d07"
+        ],
+        "x": 595,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "abf4a3ca866684d3",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio1",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1265,
+        "y": 60,
+        "wires": [
+            [
+                "5f50830d17f0d194"
+            ]
+        ]
+    },
+    {
+        "id": "0ec970e01c7fba38",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio2",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1265,
+        "y": 120,
+        "wires": [
+            [
+                "5144f9c8086c8298"
+            ]
+        ]
+    },
+    {
+        "id": "72fb039a4b627f29",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio3",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1265,
+        "y": 180,
+        "wires": [
+            [
+                "866365ebc5092668"
+            ]
+        ]
+    },
+    {
+        "id": "afda07aa6714d07f",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio4",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1265,
+        "y": 240,
+        "wires": [
+            [
+                "28fed13e07adbbb0"
+            ]
+        ]
+    },
+    {
+        "id": "a10b6fbe981c7d29",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio5",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1265,
+        "y": 300,
+        "wires": [
+            [
+                "17087649954c517c"
+            ]
+        ]
+    },
+    {
+        "id": "a2013375873cd6dc",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio6",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1265,
+        "y": 360,
+        "wires": [
+            [
+                "a32b6789bcfaaa76"
+            ]
+        ]
+    },
+    {
+        "id": "0ec954e0b45ed8fc",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio7",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1265,
+        "y": 420,
+        "wires": [
+            [
+                "440a904bea33738f"
+            ]
+        ]
+    },
+    {
+        "id": "ec79b0bf9a7ef673",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio8",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1265,
+        "y": 480,
+        "wires": [
+            [
+                "40c679ce8472b399"
+            ]
+        ]
+    },
+    {
+        "id": "5c2875d420b5d8ff",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio9",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1265,
+        "y": 540,
+        "wires": [
+            [
+                "1179ec34ececf02f"
+            ]
+        ]
+    },
+    {
+        "id": "12ba8b141d56c106",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio10",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1265,
+        "y": 600,
+        "wires": [
+            [
+                "9c085c6823eab062"
+            ]
+        ]
+    },
+    {
+        "id": "0fc656a74a969724",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio11",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1265,
+        "y": 660,
+        "wires": [
+            [
+                "93743d05ea304f09"
+            ]
+        ]
+    },
+    {
+        "id": "0f2146d3bfb97ae3",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio12",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1265,
+        "y": 720,
+        "wires": [
+            [
+                "5c0a128ac39ae713"
+            ]
+        ]
+    },
+    {
+        "id": "c8fec00a18c57723",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Spot Prijs Array",
+        "func": "var actoren = {\n    \"Prio1\": {\n        \"min\": 4.16 * 1000, // Minimum vermogen in watt (4.16 kW * 1000)\n        \"max\": 22 * 1000    // Maximum vermogen in watt (22 kW * 1000)\n    },\n    \"Prio2\": {\n        \"min\": 1 * 1000,\n        \"max\": 2 * 1000\n    },\n    \"Prio3\": {\n        \"min\": 2 * 1000,\n        \"max\": 10 * 1000\n    },\n    \"Prio4\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio5\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio6\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio7\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio8\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio9\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio10\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio11\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    },\n    \"Prio12\": {\n        \"min\": 100 * 1000,\n        \"max\": 100 * 1000\n    }\n};\n\nvar actoren_aansturen = msg.payload.actoren_aansturen || [];\nvar ontbrekendePrioriteiten = [];\n\n// Controleer welke prioriteiten ontbreken in het array\nfor (var prioriteit in actoren) {\n    var gevonden = false;\n    for (var i = 0; i < actoren_aansturen.length; i++) {\n        if (actoren_aansturen[i].actor === prioriteit) {\n            gevonden = true;\n            break;\n        }\n    }\n    if (!gevonden) {\n        ontbrekendePrioriteiten.push({\n            \"actor\": prioriteit,\n            \"min\": actoren[prioriteit].min,\n            \"max\": actoren[prioriteit].max,\n            \"overschot\": 0\n        });\n    }\n}\n\n// Stuur het nieuwe array door\nmsg.payload = {\n    \"ontbrekende_prioriteiten\": ontbrekendePrioriteiten\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 200,
+        "y": 720,
+        "wires": [
+            [
+                "48cb3a60e040e9ab",
+                "6216d780d5053148",
+                "3c35501c137e5d4e"
+            ]
+        ]
+    },
+    {
+        "id": "48cb3a60e040e9ab",
+        "type": "debug",
+        "z": "56eb50547909eb63",
+        "name": "Spot Prijs Array",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 200,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "6d368c203d4b9148",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "Spot Prijs Methode",
+        "links": [
+            "41d20d241539bd2d"
+        ],
+        "x": 75,
+        "y": 720,
+        "wires": [
+            [
+                "c8fec00a18c57723"
+            ]
+        ]
+    },
+    {
+        "id": "6216d780d5053148",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Trigger Spot Prijs",
+        "func": "var actoren = msg.payload.ontbrekende_prioriteiten || [];\n\n// Controleer of het ontvangen array leeg is\nif (actoren.length === 0) {\n    // Als het array leeg is, stuur niets door\n    return null;\n} else {\n    // Als het array niet leeg is, stuur een boolean true door\n    msg.payload = true;\n    return msg;\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 210,
+        "y": 760,
+        "wires": [
+            [
+                "ec733a4f5786a732",
+                "444b45335f4cfa5a"
+            ]
+        ]
+    },
+    {
+        "id": "ec733a4f5786a732",
+        "type": "debug",
+        "z": "56eb50547909eb63",
+        "name": "debug 95",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 200,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "5e7b1e1d2b70b0cf",
+        "type": "join",
+        "z": "56eb50547909eb63",
+        "name": "SPO On",
+        "mode": "custom",
+        "build": "array",
+        "property": "",
+        "propertyType": "full",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "2",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 830,
+        "y": 820,
+        "wires": [
+            [
+                "413c8721ccb38c3a",
+                "4d4850937ba2f33e"
+            ]
+        ]
+    },
+    {
+        "id": "1aa9db5d245008a0",
+        "type": "join",
+        "z": "56eb50547909eb63",
+        "name": "SPO Off",
+        "mode": "custom",
+        "build": "array",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "2",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 830,
+        "y": 860,
+        "wires": [
+            [
+                "1b91edebdb93ddae"
+            ]
+        ]
+    },
+    {
+        "id": "413c8721ccb38c3a",
+        "type": "debug",
+        "z": "56eb50547909eb63",
+        "name": "debug 96",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 820,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "7bb33b993a033bd1",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio1",
+        "name": "Prio1 (X0.1)",
+        "x": 1600,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "82898df7738c0ee8",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio2",
+        "name": "Prio2 (X0.2)",
+        "x": 1600,
+        "y": 840,
+        "wires": []
+    },
+    {
+        "id": "cd693bdabd28e0d0",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio1 (SPM)",
+        "func": "// Controleer of de actor \"Prio1\" aanwezig is in de payload\nconst prios = msg.payload[0].payload.ontbrekende_prioriteiten;\nconst prio1 = prios.find(prio => prio.actor === \"Prio1\");\n\nif (prio1) {\n    // Als Prio1 aanwezig is, controleer dan de waarde van de payload\n    const value = msg.payload[1].payload;\n\n    if (value === 'true') {\n        // Als waarde 'true' is, stuur true\n        msg.payload = true;\n    } else if (value === 'false') {\n        // Als waarde 'false' is, stuur false\n        msg.payload = false;\n    } else {\n        // Als waarde iets anders is, stuur niets door\n        return null;\n    }\n\n    return msg;\n} else {\n    // Als Prio1 niet aanwezig is, stuur niets door\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 780,
+        "wires": [
+            [
+                "bbc391e1682f14b7"
+            ]
+        ]
+    },
+    {
+        "id": "fe4b2e68f8b9bc42",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio2 (SPM)",
+        "func": "const prios = msg.payload[0].payload.ontbrekende_prioriteiten;\nconst prio2 = prios.find(prio => prio.actor === \"Prio2\");\n\nif (prio2) {\n    const value = msg.payload[1].payload;\n    if (value === 'true') {\n        msg.payload = true;\n    } else if (value === 'false') {\n        msg.payload = false;\n    } else {\n        return null;\n    }\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 840,
+        "wires": [
+            [
+                "5cc3c1853195bc5e"
+            ]
+        ]
+    },
+    {
+        "id": "996874edf34f0cdd",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio3",
+        "name": "Prio3 (X0.3)",
+        "x": 1600,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "0d8c09f247a347c8",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio3 (SPM)",
+        "func": "const prios = msg.payload[0].payload.ontbrekende_prioriteiten;\nconst prio3 = prios.find(prio => prio.actor === \"Prio3\");\n\nif (prio3) {\n    const value = msg.payload[1].payload;\n    if (value === 'true') {\n        msg.payload = true;\n    } else if (value === 'false') {\n        msg.payload = false;\n    } else {\n        return null;\n    }\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 900,
+        "wires": [
+            [
+                "5fc3db6cc0e40c7d"
+            ]
+        ]
+    },
+    {
+        "id": "38e52292a1810185",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio4  (SPM)",
+        "func": "const prios = msg.payload[0].payload.ontbrekende_prioriteiten;\nconst prio4 = prios.find(prio => prio.actor === \"Prio4\");\n\nif (prio4) {\n    const value = msg.payload[1].payload;\n    if (value === 'true') {\n        msg.payload = true;\n    } else if (value === 'false') {\n        msg.payload = false;\n    } else {\n        return null;\n    }\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 960,
+        "wires": [
+            [
+                "f02172f15dca2763"
+            ]
+        ]
+    },
+    {
+        "id": "5124de1ed6af20c1",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio5  (SPM)",
+        "func": "const prios = msg.payload[0].payload.ontbrekende_prioriteiten;\nconst prio5 = prios.find(prio => prio.actor === \"Prio5\");\n\nif (prio5) {\n    const value = msg.payload[1].payload;\n    if (value === 'true') {\n        msg.payload = true;\n    } else if (value === 'false') {\n        msg.payload = false;\n    } else {\n        return null;\n    }\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 1020,
+        "wires": [
+            [
+                "f7e6a5cf82be6b48"
+            ]
+        ]
+    },
+    {
+        "id": "9e2c6f06fafb9414",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio6  (SPM)",
+        "func": "const prios = msg.payload[0].payload.ontbrekende_prioriteiten;\nconst prio6 = prios.find(prio => prio.actor === \"Prio6\");\n\nif (prio6) {\n    const value = msg.payload[1].payload;\n    if (value === 'true') {\n        msg.payload = true;\n    } else if (value === 'false') {\n        msg.payload = false;\n    } else {\n        return null;\n    }\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 1080,
+        "wires": [
+            [
+                "6888c3481dff9575"
+            ]
+        ]
+    },
+    {
+        "id": "cc669e6f54b01068",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio7  (SPM)",
+        "func": "const prios = msg.payload[0].payload.ontbrekende_prioriteiten;\nconst prio7 = prios.find(prio => prio.actor === \"Prio7\");\n\nif (prio7) {\n    const value = msg.payload[1].payload;\n    if (value === 'true') {\n        msg.payload = true;\n    } else if (value === 'false') {\n        msg.payload = false;\n    } else {\n        return null;\n    }\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 1140,
+        "wires": [
+            [
+                "cf0193750e64f68a"
+            ]
+        ]
+    },
+    {
+        "id": "ad5fd2519a8f4006",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio8  (SPM)",
+        "func": "const prios = msg.payload[0].payload.ontbrekende_prioriteiten;\nconst prio8 = prios.find(prio => prio.actor === \"Prio8\");\n\nif (prio8) {\n    const value = msg.payload[1].payload;\n    if (value === 'true') {\n        msg.payload = true;\n    } else if (value === 'false') {\n        msg.payload = false;\n    } else {\n        return null;\n    }\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 1200,
+        "wires": [
+            [
+                "1067785de3c3cb37"
+            ]
+        ]
+    },
+    {
+        "id": "6c09516f97705548",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio9  (SPM)",
+        "func": "const prios = msg.payload[0].payload.ontbrekende_prioriteiten;\nconst prio9 = prios.find(prio => prio.actor === \"Prio9\");\n\nif (prio9) {\n    const value = msg.payload[1].payload;\n    if (value === 'true') {\n        msg.payload = true;\n    } else if (value === 'false') {\n        msg.payload = false;\n    } else {\n        return null;\n    }\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 1260,
+        "wires": [
+            [
+                "3026cbf97ba51ffb"
+            ]
+        ]
+    },
+    {
+        "id": "86e39e8a323ddd81",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio10  (SPM)",
+        "func": "const prios = msg.payload[0].payload.ontbrekende_prioriteiten;\nconst prio10 = prios.find(prio => prio.actor === \"Prio10\");\n\nif (prio10) {\n    const value = msg.payload[1].payload;\n    if (value === 'true') {\n        msg.payload = true;\n    } else if (value === 'false') {\n        msg.payload = false;\n    } else {\n        return null;\n    }\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1320,
+        "wires": [
+            [
+                "38ad6dac5fa7664c"
+            ]
+        ]
+    },
+    {
+        "id": "b4a91a5a4af5826f",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio11  (SPM)",
+        "func": "const prios = msg.payload[0].payload.ontbrekende_prioriteiten;\nconst prio11 = prios.find(prio => prio.actor === \"Prio11\");\n\nif (prio11) {\n    const value = msg.payload[1].payload;\n    if (value === 'true') {\n        msg.payload = true;\n    } else if (value === 'false') {\n        msg.payload = false;\n    } else {\n        return null;\n    }\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 1380,
+        "wires": [
+            [
+                "6a72b6fd2bcfee1a"
+            ]
+        ]
+    },
+    {
+        "id": "800b4a6ee4aa77cd",
+        "type": "function",
+        "z": "56eb50547909eb63",
+        "name": "Prio12  (SPM)",
+        "func": "const prios = msg.payload[0].payload.ontbrekende_prioriteiten;\nconst prio12 = prios.find(prio => prio.actor === \"Prio12\");\n\nif (prio12) {\n    const value = msg.payload[1].payload;\n    if (value === 'true') {\n        msg.payload = true;\n    } else if (value === 'false') {\n        msg.payload = false;\n    } else {\n        return null;\n    }\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 1440,
+        "wires": [
+            [
+                "958664ec1f85cd3e"
+            ]
+        ]
+    },
+    {
+        "id": "7a3c38955bbf5415",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio4",
+        "name": "Prio4 (X0.4)",
+        "x": 1600,
+        "y": 960,
+        "wires": []
+    },
+    {
+        "id": "d071163f1d476036",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio5",
+        "name": "Prio5 (X0.5)",
+        "x": 1600,
+        "y": 1020,
+        "wires": []
+    },
+    {
+        "id": "cccb7f94d25da4ba",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio6",
+        "name": "Prio6 (X0.6)",
+        "x": 1600,
+        "y": 1080,
+        "wires": []
+    },
+    {
+        "id": "d26dfd76c815fcfd",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio7",
+        "name": "Prio7 (X0.7)",
+        "x": 1600,
+        "y": 1140,
+        "wires": []
+    },
+    {
+        "id": "db8f11459a6ed49a",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio8",
+        "name": "Prio8 (X1.0)",
+        "x": 1600,
+        "y": 1200,
+        "wires": []
+    },
+    {
+        "id": "0f4f2a13c072010d",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio9",
+        "name": "Prio9 (X1.1)",
+        "x": 1600,
+        "y": 1260,
+        "wires": []
+    },
+    {
+        "id": "aaa9371ae2066849",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio10",
+        "name": "Prio10 (X1.2)",
+        "x": 1600,
+        "y": 1320,
+        "wires": []
+    },
+    {
+        "id": "8072ab3d7c54d997",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio11",
+        "name": "Prio11 (X1.3)",
+        "x": 1600,
+        "y": 1380,
+        "wires": []
+    },
+    {
+        "id": "cf1049b57e3e821a",
+        "type": "s7 out",
+        "z": "56eb50547909eb63",
+        "endpoint": "954177de27a6667d",
+        "variable": "Prio12",
+        "name": "Prio12 (X1.4)",
+        "x": 1600,
+        "y": 1440,
+        "wires": []
+    },
+    {
+        "id": "bbc391e1682f14b7",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1410,
+        "y": 780,
+        "wires": [
+            [
+                "7bb33b993a033bd1"
+            ]
+        ]
+    },
+    {
+        "id": "5cc3c1853195bc5e",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1410,
+        "y": 840,
+        "wires": [
+            [
+                "82898df7738c0ee8"
+            ]
+        ]
+    },
+    {
+        "id": "5fc3db6cc0e40c7d",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1410,
+        "y": 900,
+        "wires": [
+            [
+                "996874edf34f0cdd"
+            ]
+        ]
+    },
+    {
+        "id": "f7e6a5cf82be6b48",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1410,
+        "y": 1020,
+        "wires": [
+            [
+                "d071163f1d476036"
+            ]
+        ]
+    },
+    {
+        "id": "6888c3481dff9575",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1410,
+        "y": 1080,
+        "wires": [
+            [
+                "cccb7f94d25da4ba"
+            ]
+        ]
+    },
+    {
+        "id": "cf0193750e64f68a",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1410,
+        "y": 1140,
+        "wires": [
+            [
+                "d26dfd76c815fcfd"
+            ]
+        ]
+    },
+    {
+        "id": "1067785de3c3cb37",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1410,
+        "y": 1200,
+        "wires": [
+            [
+                "db8f11459a6ed49a"
+            ]
+        ]
+    },
+    {
+        "id": "3026cbf97ba51ffb",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1410,
+        "y": 1260,
+        "wires": [
+            [
+                "0f4f2a13c072010d"
+            ]
+        ]
+    },
+    {
+        "id": "38ad6dac5fa7664c",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1410,
+        "y": 1320,
+        "wires": [
+            [
+                "aaa9371ae2066849"
+            ]
+        ]
+    },
+    {
+        "id": "6a72b6fd2bcfee1a",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1410,
+        "y": 1380,
+        "wires": [
+            [
+                "8072ab3d7c54d997"
+            ]
+        ]
+    },
+    {
+        "id": "958664ec1f85cd3e",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1410,
+        "y": 1440,
+        "wires": [
+            [
+                "cf1049b57e3e821a"
+            ]
+        ]
+    },
+    {
+        "id": "f02172f15dca2763",
+        "type": "trigger",
+        "z": "56eb50547909eb63",
+        "name": "",
+        "op1": "",
+        "op2": "",
+        "op1type": "pay",
+        "op2type": "nul",
+        "duration": "10",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 1410,
+        "y": 960,
+        "wires": [
+            [
+                "7a3c38955bbf5415"
+            ]
+        ]
+    },
+    {
+        "id": "550e299a12eaa29a",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio1",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1505,
+        "y": 800,
+        "wires": [
+            [
+                "7bb33b993a033bd1"
+            ]
+        ]
+    },
+    {
+        "id": "974405fe05dd05bd",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio2",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1505,
+        "y": 860,
+        "wires": [
+            [
+                "82898df7738c0ee8"
+            ]
+        ]
+    },
+    {
+        "id": "9f87d335a92f834e",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio3",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1505,
+        "y": 920,
+        "wires": [
+            [
+                "996874edf34f0cdd"
+            ]
+        ]
+    },
+    {
+        "id": "fd841dd98edf9d3e",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio4",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1505,
+        "y": 980,
+        "wires": [
+            [
+                "7a3c38955bbf5415"
+            ]
+        ]
+    },
+    {
+        "id": "7c136d081f6c82f8",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio5",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1505,
+        "y": 1040,
+        "wires": [
+            [
+                "d071163f1d476036"
+            ]
+        ]
+    },
+    {
+        "id": "3a322dc00fbc980d",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio6",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1505,
+        "y": 1100,
+        "wires": [
+            [
+                "cccb7f94d25da4ba"
+            ]
+        ]
+    },
+    {
+        "id": "57abb6bc74d4106c",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio7",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1505,
+        "y": 1160,
+        "wires": [
+            [
+                "d26dfd76c815fcfd"
+            ]
+        ]
+    },
+    {
+        "id": "59d8a6c0a97a3de3",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio8",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1505,
+        "y": 1220,
+        "wires": [
+            [
+                "db8f11459a6ed49a"
+            ]
+        ]
+    },
+    {
+        "id": "e27c7eb5a6bc70df",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio9",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1505,
+        "y": 1280,
+        "wires": [
+            [
+                "0f4f2a13c072010d"
+            ]
+        ]
+    },
+    {
+        "id": "e7cb88947ebca49a",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio10",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1505,
+        "y": 1340,
+        "wires": [
+            [
+                "aaa9371ae2066849"
+            ]
+        ]
+    },
+    {
+        "id": "66cdac0a82cf6a52",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio11",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1505,
+        "y": 1400,
+        "wires": [
+            [
+                "8072ab3d7c54d997"
+            ]
+        ]
+    },
+    {
+        "id": "d602f0a6797b5ca4",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "False override Prio12",
+        "links": [
+            "349cfa06b60e7749"
+        ],
+        "x": 1505,
+        "y": 1460,
+        "wires": [
+            [
+                "cf1049b57e3e821a"
+            ]
+        ]
+    },
+    {
+        "id": "4d4850937ba2f33e",
+        "type": "link out",
+        "z": "56eb50547909eb63",
+        "name": "SPO On",
+        "mode": "link",
+        "links": [
+            "ad9f9223cc80e672",
+            "aac56ba84c3bca28",
+            "6b47f6ae4f8efd5f",
+            "8e7f045091c39ae3",
+            "097667e8ced34aa2",
+            "7dd81a4438b36584",
+            "d449acc96fe86faa",
+            "a2e6980f863556ca",
+            "7185494f04c2eda7",
+            "fd8edb9ccfa32b99",
+            "a729dee0c510c4cd",
+            "87992364593065ae"
+        ],
+        "x": 965,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "1b91edebdb93ddae",
+        "type": "link out",
+        "z": "56eb50547909eb63",
+        "name": "SPO Off",
+        "mode": "link",
+        "links": [
+            "ad9f9223cc80e672",
+            "aac56ba84c3bca28",
+            "6b47f6ae4f8efd5f",
+            "8e7f045091c39ae3",
+            "097667e8ced34aa2",
+            "7dd81a4438b36584",
+            "d449acc96fe86faa",
+            "a2e6980f863556ca",
+            "7185494f04c2eda7",
+            "fd8edb9ccfa32b99",
+            "a729dee0c510c4cd",
+            "87992364593065ae"
+        ],
+        "x": 965,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "aac56ba84c3bca28",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "SPO Prio1",
+        "links": [
+            "4d4850937ba2f33e",
+            "1b91edebdb93ddae"
+        ],
+        "x": 1115,
+        "y": 780,
+        "wires": [
+            [
+                "cd693bdabd28e0d0"
+            ]
+        ]
+    },
+    {
+        "id": "ad9f9223cc80e672",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "SPO Prio2",
+        "links": [
+            "4d4850937ba2f33e",
+            "1b91edebdb93ddae"
+        ],
+        "x": 1115,
+        "y": 840,
+        "wires": [
+            [
+                "fe4b2e68f8b9bc42"
+            ]
+        ]
+    },
+    {
+        "id": "6b47f6ae4f8efd5f",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "SPO Prio3",
+        "links": [
+            "4d4850937ba2f33e",
+            "1b91edebdb93ddae"
+        ],
+        "x": 1115,
+        "y": 900,
+        "wires": [
+            [
+                "0d8c09f247a347c8"
+            ]
+        ]
+    },
+    {
+        "id": "8e7f045091c39ae3",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "SPO Prio4",
+        "links": [
+            "4d4850937ba2f33e",
+            "1b91edebdb93ddae"
+        ],
+        "x": 1115,
+        "y": 960,
+        "wires": [
+            [
+                "38e52292a1810185"
+            ]
+        ]
+    },
+    {
+        "id": "097667e8ced34aa2",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "SPO Prio5",
+        "links": [
+            "4d4850937ba2f33e",
+            "1b91edebdb93ddae"
+        ],
+        "x": 1115,
+        "y": 1020,
+        "wires": [
+            [
+                "5124de1ed6af20c1"
+            ]
+        ]
+    },
+    {
+        "id": "7dd81a4438b36584",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "SPO Prio6",
+        "links": [
+            "4d4850937ba2f33e",
+            "1b91edebdb93ddae"
+        ],
+        "x": 1115,
+        "y": 1080,
+        "wires": [
+            [
+                "9e2c6f06fafb9414"
+            ]
+        ]
+    },
+    {
+        "id": "d449acc96fe86faa",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "SPO Prio7",
+        "links": [
+            "4d4850937ba2f33e",
+            "1b91edebdb93ddae"
+        ],
+        "x": 1115,
+        "y": 1140,
+        "wires": [
+            [
+                "cc669e6f54b01068"
+            ]
+        ]
+    },
+    {
+        "id": "a2e6980f863556ca",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "SPO Prio8",
+        "links": [
+            "4d4850937ba2f33e",
+            "1b91edebdb93ddae"
+        ],
+        "x": 1115,
+        "y": 1200,
+        "wires": [
+            [
+                "ad5fd2519a8f4006"
+            ]
+        ]
+    },
+    {
+        "id": "7185494f04c2eda7",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "SPO Prio9",
+        "links": [
+            "4d4850937ba2f33e",
+            "1b91edebdb93ddae"
+        ],
+        "x": 1115,
+        "y": 1260,
+        "wires": [
+            [
+                "6c09516f97705548"
+            ]
+        ]
+    },
+    {
+        "id": "fd8edb9ccfa32b99",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "SPO Prio10",
+        "links": [
+            "4d4850937ba2f33e",
+            "1b91edebdb93ddae"
+        ],
+        "x": 1115,
+        "y": 1320,
+        "wires": [
+            [
+                "86e39e8a323ddd81"
+            ]
+        ]
+    },
+    {
+        "id": "a729dee0c510c4cd",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "SPO Prio11",
+        "links": [
+            "4d4850937ba2f33e",
+            "1b91edebdb93ddae"
+        ],
+        "x": 1115,
+        "y": 1380,
+        "wires": [
+            [
+                "b4a91a5a4af5826f"
+            ]
+        ]
+    },
+    {
+        "id": "87992364593065ae",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "SPO Prio12",
+        "links": [
+            "4d4850937ba2f33e",
+            "1b91edebdb93ddae"
+        ],
+        "x": 1115,
+        "y": 1440,
+        "wires": [
+            [
+                "800b4a6ee4aa77cd"
+            ]
+        ]
+    },
+    {
+        "id": "e2af40b91c2bf7f5",
+        "type": "link in",
+        "z": "56eb50547909eb63",
+        "name": "SPO Array",
+        "links": [
+            "3c35501c137e5d4e"
+        ],
+        "x": 665,
+        "y": 800,
+        "wires": [
+            [
+                "5e7b1e1d2b70b0cf",
+                "1aa9db5d245008a0"
+            ]
+        ]
+    },
+    {
+        "id": "3c35501c137e5d4e",
+        "type": "link out",
+        "z": "56eb50547909eb63",
+        "name": "SPO Array",
+        "mode": "link",
+        "links": [
+            "e2af40b91c2bf7f5"
+        ],
+        "x": 345,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "8e902401ad449d30",
+        "type": "modbus-client",
+        "name": "",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "10.130.86.31",
+        "tcpPort": "502",
+        "tcpType": "DEFAULT",
+        "serialPort": "/dev/ttyUSB",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": "9600",
+        "serialDatabits": "8",
+        "serialStopbits": "1",
+        "serialParity": "none",
+        "serialConnectionDelay": "100",
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": 1,
+        "commandDelay": 1,
+        "clientTimeout": 1000,
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": 2000,
+        "parallelUnitIdsAllowed": true
+    },
+    {
+        "id": "954177de27a6667d",
+        "type": "s7 endpoint",
+        "transport": "iso-on-tcp",
+        "address": "192.168.1.33",
+        "port": "102",
+        "rack": "2",
+        "slot": "3",
+        "localtsaphi": "01",
+        "localtsaplo": "00",
+        "remotetsaphi": "01",
+        "remotetsaplo": "00",
+        "connmode": "rack-slot",
+        "adapter": "",
+        "busaddr": "2",
+        "cycletime": "1000",
+        "timeout": "2000",
+        "name": "",
+        "vartable": [
+            {
+                "addr": "DB1,X0.1",
+                "name": "Prio1"
+            },
+            {
+                "addr": "DB1,X0.2",
+                "name": "Prio2"
+            },
+            {
+                "addr": "DB1,X0.3",
+                "name": "Prio3"
+            },
+            {
+                "addr": "DB1,X0.4",
+                "name": "Prio4"
+            },
+            {
+                "addr": "DB1,X0.5",
+                "name": "Prio5"
+            },
+            {
+                "addr": "DB1,X0.6",
+                "name": "Prio6"
+            },
+            {
+                "addr": "DB1,X0.7",
+                "name": "Prio7"
+            },
+            {
+                "addr": "DB1,X1.0",
+                "name": "Prio8"
+            },
+            {
+                "addr": "DB1,X1.1",
+                "name": "Prio9"
+            },
+            {
+                "addr": "DB1,X1.2",
+                "name": "Prio10"
+            },
+            {
+                "addr": "DB1,X1.3",
+                "name": "Prio11"
+            },
+            {
+                "addr": "DB1,X1.4",
+                "name": "Prio12"
+            }
+        ]
+    }
+]
